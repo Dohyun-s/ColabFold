@@ -1187,6 +1187,7 @@ def run(
     dpi: int = 200,
     max_seq: Optional[int] = None,
     max_extra_seq: Optional[int] = None,
+    use_cluster_profile: bool = True,
     feature_dict_callback: Callable[[Any], Any] = None,
     **kwargs
 ):
@@ -1235,7 +1236,6 @@ def run(
     pair_mode  = old_names.get(pair_mode,pair_mode)
     feature_dict_callback = kwargs.pop("input_features_callback", feature_dict_callback)
     use_dropout           = kwargs.pop("training", use_dropout)
-    use_cluster_profile   = kwargs.pop("use_cluster_profile", None)
     use_fuse              = kwargs.pop("use_fuse", True)
     use_bfloat16          = kwargs.pop("use_bfloat16", True)
     max_msa               = kwargs.pop("max_msa",None)
@@ -1660,7 +1660,7 @@ def main():
         help="rank models by auto, plddt or ptmscore",
         type=str,
         default="auto",
-        choices=["auto", "plddt", "ptmscore", "multimer"],
+        choices=["auto", "plddt", "ptm", "iptm", "multimer"],
     )
     parser.add_argument(
         "--pair-mode",
@@ -1711,6 +1711,12 @@ def main():
         help="defines: `max-seq:max-extra-seq` number of sequences to use",
         type=str,
         default=None,
+    )
+    parser.add_argument(
+        "--disable-cluster-profile",
+        default=False,
+        action="store_true",
+        help="EXPERIMENTAL: for multimer models, disable cluster profiles",
     )
     parser.add_argument(
         "--zip",
@@ -1799,6 +1805,7 @@ def main():
         max_seq=args.max_seq,
         max_extra_seq=args.max_extra_seq,
         max_msa=args.max_msa,
+        use_cluster_profile=not args.disable_cluster_profile,
         use_gpu_relax = args.use_gpu_relax,
         save_all=args.save_all,
         save_recycles=args.save_recycles,
