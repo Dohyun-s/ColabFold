@@ -391,6 +391,7 @@ def main():
         run(queries=queries_rest, **run_params)
   
   else:
+    queries.sort(key=lambda t: len(''.join(t[1])),reverse=True)
     run(queries=queries, **run_params)
 
 if __name__ == "__main__":

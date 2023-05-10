@@ -11,6 +11,7 @@ import importlib_metadata
 import numpy as np
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, TYPE_CHECKING
 from pathlib import Path
+from jax2torch import jax2torch
 
 import logging
 logger = logging.getLogger(__name__)
@@ -333,6 +334,9 @@ def run(
           max_extra_seq = max(min(num_seqs - max_seq, max_extra_seq), 1)
           logger.info(f"Setting max_seq={max_seq}, max_extra_seq={max_extra_seq}")
 
+        # num_msa_seqs = int(len(feature_dict["msa"]))
+        # if max_msa_cluster == None:
+        #   num_msa_seqs = [0, 0, 0, 0, 0]
         model_runner_and_params = load_models_and_params(
           num_models=num_models,
           use_templates=use_templates,
@@ -352,7 +356,19 @@ def run(
           save_all=save_all,
         )
         first_job = False
-
+      
+      # world_size = 1
+      # rank = 0
+      # import torch.distributed as dist
+      # def setup(rank, world_size):
+      #   # initialize the process group
+      #   dist.init_process_group(backend='nccl')
+      # setup(rank, world_size)
+      # def cleanup():
+      #     dist.destroy_process_group()
+      # setup(rank, world_size)
+      # global predict_structure
+      # predict_structure = jax2torch(predict_structure)
       results = predict_structure(
         prefix=jobname,
         result_dir=result_dir,
@@ -376,6 +392,7 @@ def run(
         save_recycles=save_recycles,
         max_msa_cluster=max_msa_cluster,
       )
+      # cleanup()
       result_files = results["result_files"]
       ranks.append(results["rank"])
       metrics.append(results["metric"])
